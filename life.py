@@ -1,3 +1,5 @@
+import math
+
 import pyglet
 from pyglet.window import key
 from pyglet.gl import *
@@ -6,6 +8,11 @@ from shader import Shader as NewShader
 import random
 
 class ShaderWindow(pyglet.window.Window):
+
+    sprite_files = ['oval.png', 'bars.png', 'bevel.png', 'spiral.png', 'spikes.png', 'dots.png', 'scraps.png']
+    num_keys = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
+
+
     def __init__(self, shader):
         # Create window
         super(ShaderWindow, self).__init__(800, 800, caption="Shader Testing")
@@ -17,11 +24,16 @@ class ShaderWindow(pyglet.window.Window):
         self.bg.x = 300
         self.bg.y = 30
         # Setup mouse
-        img = pyglet.image.load('cursor.png')
-        img.anchor_x = img.width / 2
-        img.anchor_y = img.height / 2
-        cur = pyglet.sprite.Sprite(img)
-        self.cur = cur
+        sprites = []
+        for file in self.sprite_files:
+            img = pyglet.image.load(file)
+            img.anchor_x = img.width / 2
+            img.anchor_y = img.height / 2
+            cur = pyglet.sprite.Sprite(img)
+            cur.visible = False
+            sprites.append(cur)
+        self.cursors = sprites
+        self.cursors[-1].visible = True
         # Setup shader
         shader.bind()
         shader.uniformi('tex0', 0)
@@ -41,26 +53,67 @@ class ShaderWindow(pyglet.window.Window):
         )
         self.batch = batch
         
-        
         self.setup_gl()
         #pyglet.clock.schedule(self.update)
         pyglet.clock.schedule_interval(self.update, 1.0/30.0)
         self.keys = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keys)
+        self.pressed = False
+        self.shading = False
+        self.baseval = 0.0
+        self.divisor = 0.4
         # set update function
         pyglet.clock.schedule(self.update)
         
         self.angle = 1.0
         
-    def on_mouse_motion(self, x, y, dx, dy):
-        self.cur.x = x
-        self.cur.y = y
+    def _get_cursor(self):
+        return self.cursors[-1]
+    cursor = property(_get_cursor)
+    
+    def update_angle(self):
+        self.angle = (0.13159265358979 + self.baseval) / self.divisor
         
-        self.angle = 3.141592653 / 0.4
+    def update_cursor(self, x, y):
+        self.cursor.x = x
+        self.cursor.y = y
+        
+        #self.angle = 3.141592653 / 0.4
+        #self.angle = 45
+        #self.angle = 0.14159265358979 / 0.38
+        
+        cdist = math.sqrt(((x - 400)**2) + ((y - 400)**2))
+        rdist = 300 - math.sqrt(((x - 0)**2) + ((y - 0)**2)) / 2.0
+        gdist = 300 - math.sqrt(((x - 300)**2) + ((y - 800)**2)) / 2.0
+        bdist = 300 - math.sqrt(((x - 800)**2) + ((y - 0)**2)) / 2.0
+        
+        self.cursor.scale = max(0.1, cdist / 220)
+        self.cursor.rotation = cdist
+        
+        rcomponent = max(20, min(255, rdist))
+        gcomponent = max(20, min(255, gdist))
+        bcomponent = max(20, min(255, bdist))
+        self.cursor.color = (rcomponent, gcomponent, bcomponent)
+        
+    def update_divisor(self, identifier):
+        if identifier == key.UP:
+            self.divisor += 0.1
+        else:
+            self.divisor -= 0.1
+        self.update_angle()
+        
+    def next_cursor(self):
+        spr = self.cursors.pop()
+        spr.visible = False
+        self.cursors.insert(0, spr)
+        self.cursor.visible = True
+        
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.update_cursor(x, y)
             
 
     def setup_gl(self):
-        pyglet.gl.glClearColor(1.0, 1.0, 1.0, 1.0)
+        pyglet.gl.glClearColor(1.0, 0.0, 0.0, 1.0)
         pyglet.gl.glEnable(pyglet.gl.GL_LINE_SMOOTH)
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
         pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA,
@@ -87,28 +140,52 @@ class ShaderWindow(pyglet.window.Window):
         self.copyFramebuffer(self.texture, width, height)
 
         return pyglet.event.EVENT_HANDLED
+        
+        
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.pressed = True
+        self.update_cursor(x, y)
+        
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        self.pressed = False
+        
+    def on_key_press(self, symbol, modifiers):
+        if symbol == pyglet.window.key.CAPSLOCK:
+            self.shading = not self.shading
+            return True
+        elif symbol == pyglet.window.key.TAB:
+            self.next_cursor()
+        elif symbol in self.num_keys:
+            self.baseval = self.num_keys.index(symbol)
+            self.divisor = 0.4
+            self.update_angle()
+        elif symbol in [key.UP, key.DOWN]:
+            self.update_divisor(symbol)
+        elif symbol == pyglet.window.key.ESCAPE:
+            self.on_close()
+            
   
     def update(self, dt):
-        pass
+        print self.baseval, self.divisor, self.angle
 
     def on_draw(self):
-        self.clear()
-        
-    
         glBindTexture(self.texture.target, self.texture.id)
+        pyglet.gl.glClearColor(1.0, 0.0, 0.0, 1.0)
+        self.clear()
         #glActiveTexture(GL_TEXTURE0 + 1)    
         #glBindTexture(texture1.target, texture1.id)
     
         
-        if self.keys[key.SPACE]:
+        if self.shading:
             self.shader.bind()
             shader.uniformf('angle', self.angle)
         self.batch.draw()
-        if self.keys[key.SPACE]:
+        if self.shading:
             self.shader.unbind()
         
         #self.bg.draw()
-        self.cur.draw()
+        if self.pressed:
+            self.cursor.draw()
 
         #glBindTexture(self.texture.target, 0)
         #glBindTexture(texture1.target, 0)
