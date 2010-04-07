@@ -16,14 +16,7 @@ class ShaderWindow(pyglet.window.Window):
 
     def __init__(self, shader):
         # Create window
-        super(ShaderWindow, self).__init__(800, 800, caption="Shader Testing")
-        # Setup Background
-        img = pyglet.image.load("bg.png")
-        img.anchor_x = img.width / 2
-        img.anchor_y = img.height / 2
-        self.bg = pyglet.sprite.Sprite(img)
-        self.bg.x = 300
-        self.bg.y = 30
+        super(ShaderWindow, self).__init__(1000, 1000, caption="Shader Testing")
         # Setup mouse
         sprites = []
         for file in self.sprite_files:
@@ -35,7 +28,7 @@ class ShaderWindow(pyglet.window.Window):
             sprites.append(cur)
         self.cursors = sprites
         self.cursors[-1].visible = True
-        self.cursorpos = [400, 400]
+        self.cursorpos = [self.width/2.0, self.height/2.0]
         # Setup shader
         shader.bind()
         shader.uniformi('tex0', 0)
@@ -44,7 +37,7 @@ class ShaderWindow(pyglet.window.Window):
         self.shader = shader
         
         # Setup Texture
-        texture = pyglet.image.Texture.create_for_size(GL_TEXTURE_RECTANGLE_ARB, self.bg.width, self.bg.height, internalformat=GL_RGBA)
+        texture = pyglet.image.Texture.create_for_size(GL_TEXTURE_RECTANGLE_ARB, self.width, self.height, internalformat=GL_RGBA)
         glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(texture.target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         self.texture = texture
@@ -87,7 +80,7 @@ class ShaderWindow(pyglet.window.Window):
         #self.angle = 45
         #self.angle = 0.14159265358979 / 0.38
         
-        cdist = math.sqrt(((x - 400)**2) + ((y - 400)**2))
+        cdist = math.sqrt(((x - self.width/2.0)**2) + ((y - self.height/2.0)**2))
         rdist = 300 - math.sqrt(((x - 0)**2) + ((y - 0)**2)) / 2.0
         gdist = 300 - math.sqrt(((x - 300)**2) + ((y - 800)**2)) / 2.0
         bdist = 300 - math.sqrt(((x - 800)**2) + ((y - 0)**2)) / 2.0
@@ -129,6 +122,10 @@ class ShaderWindow(pyglet.window.Window):
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(GL_MODELVIEW)
+        
+        self.shader.bind()
+        shader.uniformf('center', self.width/2.0, self.height/2.0)
+        self.shader.unbind()
     
         # copy the framebuffer, which also resizes the texture
         self.copyFramebuffer(self.texture, width, height)
@@ -209,9 +206,10 @@ void main() {
 '''], ['''
 uniform sampler2DRect tex0;
 uniform float angle;
+uniform vec2 center;
 
 void main() {
-    vec2 center = vec2(400.0);
+    //vec2 center = vec2(400.0);
     
     // retrieve the texture coordinate
     vec2 c = gl_TexCoord[0].xy - center;
