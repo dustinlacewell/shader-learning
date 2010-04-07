@@ -10,9 +10,9 @@ import random
 
 class ShaderWindow(pyglet.window.Window):
 
-    sprite_files = ['oval.png', 'bars.png', 'bevel.png', 'spiral.png', 'spikes.png', 'dots.png', 'scraps.png']
+    sprite_files = ['eclipse.png', 'oval.png', 'bars.png', 'bevel.png', 'spiral.png', 'dots.png']
     num_keys = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
-    angleinc = 0.0001
+    angleinc = 0.00009
 
     def __init__(self, shader):
         # Create window
@@ -66,9 +66,9 @@ class ShaderWindow(pyglet.window.Window):
         # set update function
         pyglet.clock.schedule(self.update)
         
-        self.angledelta = 0.1
+        self.angledelta = 3.0
         self.angledir = 1.0
-        self.angle = (2 * pi) / 1.0
+        self.angle = (2 * pi) / 3.0
         
         self.set_exclusive_mouse()
         
@@ -151,6 +151,8 @@ class ShaderWindow(pyglet.window.Window):
             return True
         elif symbol == pyglet.window.key.TAB:
             self.next_cursor()
+        elif symbol in self.num_keys:
+            self.angledelta = float(self.num_keys.index(symbol) + (self.angledelta % 1))
         elif symbol == pyglet.window.key.ESCAPE:
             self.on_close()
             
@@ -163,6 +165,8 @@ class ShaderWindow(pyglet.window.Window):
         elif self.angledelta <= 1.0:
             self.angledelta = 1.0
             self.angledir = -self.angledir
+            
+        print self.angledelta
             
         self.angle = (2 * pi) / self.angledelta
             
