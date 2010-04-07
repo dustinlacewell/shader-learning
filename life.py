@@ -35,12 +35,14 @@ class ShaderWindow(pyglet.window.Window):
             sprites.append(cur)
         self.cursors = sprites
         self.cursors[-1].visible = True
+        self.cursorpos = [400, 400]
         # Setup shader
         shader.bind()
         shader.uniformi('tex0', 0)
         shader.uniformi('tex1', 1)
         shader.unbind()
         self.shader = shader
+        
         # Setup Texture
         texture = pyglet.image.Texture.create_for_size(GL_TEXTURE_RECTANGLE_ARB, self.bg.width, self.bg.height, internalformat=GL_RGBA)
         glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -70,6 +72,7 @@ class ShaderWindow(pyglet.window.Window):
         self.angledir = 1.0
         self.angle = (2 * pi) / 1.0
         
+        self.set_exclusive_mouse()
         
     def _get_cursor(self):
         return self.cursors[-1]
@@ -80,10 +83,13 @@ class ShaderWindow(pyglet.window.Window):
         self.angle = (0.13159265358979 + self.baseval) / self.divisor
         self.angle = 3.141592653 / 0.4
         
-    def update_cursor(self, x, y):
-        self.cursor.x = x
-        self.cursor.y = y
-        
+    def update_cursor(self, dx, dy):
+        self.cursorpos[0] += dx
+        self.cursorpos[1] += dy
+        self.cursorpos[0] = max(0.0, min(self.width, self.cursorpos[0]))
+        self.cursorpos[1] = max(0.0, min(self.height, self.cursorpos[1]))
+        self.cursor.x, self.cursor.y = self.cursorpos
+        x, y = self.cursor.position        
         #self.angle = 3.141592653 / 0.4
         #self.angle = 45
         #self.angle = 0.14159265358979 / 0.38
@@ -115,7 +121,7 @@ class ShaderWindow(pyglet.window.Window):
         self.cursor.visible = True
         
     def on_mouse_motion(self, x, y, dx, dy):
-        self.update_cursor(x, y)
+        self.update_cursor(dx, dy)
             
 
     def setup_gl(self):
@@ -150,7 +156,7 @@ class ShaderWindow(pyglet.window.Window):
         
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.pressed = True
-        self.update_cursor(x, y)
+        self.update_cursor(dx, dy)
         
     def on_mouse_release(self, x, y, buttons, modifiers):
         self.pressed = False
