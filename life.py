@@ -63,8 +63,6 @@ class ShaderWindow(pyglet.window.Window):
         self.push_handlers(self.keys)
         self.pressed = False
         self.shading = False
-        self.baseval = 0.0
-        self.divisor = 0.4
         # set update function
         pyglet.clock.schedule(self.update)
         
@@ -77,11 +75,6 @@ class ShaderWindow(pyglet.window.Window):
     def _get_cursor(self):
         return self.cursors[-1]
     cursor = property(_get_cursor)
-    
-    def update_angle(self):
-        return
-        self.angle = (0.13159265358979 + self.baseval) / self.divisor
-        self.angle = 3.141592653 / 0.4
         
     def update_cursor(self, dx, dy):
         self.cursorpos[0] += dx
@@ -107,22 +100,11 @@ class ShaderWindow(pyglet.window.Window):
         bcomponent = max(20, min(255, bdist))
         self.cursor.color = (rcomponent, gcomponent, bcomponent)
         
-    def update_divisor(self, identifier):
-        if identifier == key.UP:
-            self.divisor += 0.1
-        else:
-            self.divisor -= 0.1
-        self.update_angle()
-        
     def next_cursor(self):
         spr = self.cursors.pop()
         spr.visible = False
         self.cursors.insert(0, spr)
-        self.cursor.visible = True
-        
-    def on_mouse_motion(self, x, y, dx, dy):
-        self.update_cursor(dx, dy)
-            
+        self.cursor.visible = True            
 
     def setup_gl(self):
         pyglet.gl.glClearColor(1.0, 0.0, 0.0, 1.0)
@@ -153,6 +135,8 @@ class ShaderWindow(pyglet.window.Window):
 
         return pyglet.event.EVENT_HANDLED
         
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.update_cursor(dx, dy)
         
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.pressed = True
@@ -167,12 +151,6 @@ class ShaderWindow(pyglet.window.Window):
             return True
         elif symbol == pyglet.window.key.TAB:
             self.next_cursor()
-        elif symbol in self.num_keys:
-            self.baseval = self.num_keys.index(symbol)
-            self.divisor = 0.4
-            self.update_angle()
-        elif symbol in [key.UP, key.DOWN]:
-            self.update_divisor(symbol)
         elif symbol == pyglet.window.key.ESCAPE:
             self.on_close()
             
