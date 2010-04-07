@@ -56,7 +56,7 @@ class ShaderWindow(pyglet.window.Window):
         self.cur.x = x
         self.cur.y = y
         
-        self.angle = max(1.0, abs(dx) / 10.0)
+        self.angle = 3.141592653 / 0.4
             
 
     def setup_gl(self):
