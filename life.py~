@@ -1,4 +1,5 @@
 import math
+from math import pi
 
 import pyglet
 from pyglet.window import key
@@ -11,7 +12,7 @@ class ShaderWindow(pyglet.window.Window):
 
     sprite_files = ['oval.png', 'bars.png', 'bevel.png', 'spiral.png', 'spikes.png', 'dots.png', 'scraps.png']
     num_keys = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
-
+    angleinc = 0.00001
 
     def __init__(self, shader):
         # Create window
@@ -65,14 +66,19 @@ class ShaderWindow(pyglet.window.Window):
         # set update function
         pyglet.clock.schedule(self.update)
         
-        self.angle = 1.0
+        self.angledelta = 0.1
+        self.angledir = 1.0
+        self.angle = (2 * pi) / 1.0
+        
         
     def _get_cursor(self):
         return self.cursors[-1]
     cursor = property(_get_cursor)
     
     def update_angle(self):
-        self.angle = (0.14059265358979 + self.baseval) / self.divisor
+        return
+        self.angle = (0.13159265358979 + self.baseval) / self.divisor
+        self.angle = 3.141592653 / 0.4
         
     def update_cursor(self, x, y):
         self.cursor.x = x
@@ -87,7 +93,7 @@ class ShaderWindow(pyglet.window.Window):
         gdist = 300 - math.sqrt(((x - 300)**2) + ((y - 800)**2)) / 2.0
         bdist = 300 - math.sqrt(((x - 800)**2) + ((y - 0)**2)) / 2.0
         
-        self.cursor.scale = max(0.1, cdist / 220)
+        self.cursor.scale = max(0.1, cdist / 280)
         self.cursor.rotation = cdist
         
         rcomponent = max(20, min(255, rdist))
@@ -166,7 +172,16 @@ class ShaderWindow(pyglet.window.Window):
             
   
     def update(self, dt):
-        print self.baseval, self.divisor, self.angle
+        self.angledelta += self.angleinc * self.angledir
+        if self.angledelta >= 100.0:
+            self.angledelta = 100.0
+            self.angledir = -self.angledir
+        elif self.angledelta <= 1.0:
+            self.angledelta = 1.0
+            self.angledir = -self.angledir
+            
+        self.angle = (2 * pi) / self.angledelta
+            
 
     def on_draw(self):
         glBindTexture(self.texture.target, self.texture.id)
