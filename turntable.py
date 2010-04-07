@@ -18,9 +18,11 @@ class ShaderWindow(pyglet.window.Window):
         # Create window
         super(ShaderWindow, self).__init__(1000, 1000, caption="Shader Testing")
         # Setup mouse
+        pyglet.resource.path.append('turntable')
+        pyglet.resource.reindex()
         sprites = []
         for file in self.sprite_files:
-            img = pyglet.image.load(file)
+            img = pyglet.resource.image(file)
             img.anchor_x = img.width / 2
             img.anchor_y = img.height / 2
             cur = pyglet.sprite.Sprite(img)
