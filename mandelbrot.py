@@ -11,12 +11,12 @@ import random
 class ShaderWindow(pyglet.window.Window):
     def __init__(self, shader):
         # Create window
-        super(ShaderWindow, self).__init__(256, 256, caption="Shader Testing")
+        super(ShaderWindow, self).__init__(512, 512, caption="Shader Testing")
         # Setup mouse
 
         shader.bind()
         
-        shader.uniformf('MaxIterations', 100.0)
+        shader.uniformf('MaxIterations', 300.0)
         shader.uniformf('Zoom', 1.0)
         shader.uniformf('Xcenter', 0.0)
         shader.uniformf('Ycenter', 0.0)
@@ -90,12 +90,12 @@ class ShaderWindow(pyglet.window.Window):
         
     def on_mouse_press(self, x, y, buttons, modifiers):
         if buttons == pyglet.window.mouse.LEFT:
-            dx = 2.5*((x - self.width/2.0)/self.width/2.0)
-            dy = 2.5*((self.width/2.0 - x)/self.width/2.0)
-            self.center[0] = -dx
-            self.center[1] = -dy
-            print self.center
-            #self.zoom *= 0.5
+            dx = 5*((x - self.width/2.0)/self.width)
+            dy = 5*((y - self.height/2.0)/self.height)
+            self.center[0] += dx * self.zoom
+            self.center[1] += dy * self.zoom
+        self.zoom *= 0.92
+        print self.zoom
         
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
