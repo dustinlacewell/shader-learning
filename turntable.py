@@ -16,7 +16,7 @@ class ShaderWindow(pyglet.window.Window):
 
     def __init__(self, shader):
         # Create window
-        super(ShaderWindow, self).__init__(1000, 1000, caption="Shader Testing")
+        super(ShaderWindow, self).__init__(1430, 890, caption="Shader Testing")
         # Setup mouse
         pyglet.resource.path.append('turntable')
         pyglet.resource.reindex()
@@ -59,7 +59,7 @@ class ShaderWindow(pyglet.window.Window):
         self.pressed = False
         self.shading = False
         # set update function
-        pyglet.clock.schedule(self.update)
+        pyglet.clock.schedule_interval(self.update, 1.0/30.0)
         
         self.angledelta = 3.0
         self.angledir = 1.0
@@ -83,9 +83,13 @@ class ShaderWindow(pyglet.window.Window):
         #self.angle = 0.14159265358979 / 0.38
         
         cdist = math.sqrt(((x - self.width/2.0)**2) + ((y - self.height/2.0)**2))
-        rdist = 300 - math.sqrt(((x - 0)**2) + ((y - 0)**2)) / 2.0
-        gdist = 300 - math.sqrt(((x - 300)**2) + ((y - 800)**2)) / 2.0
-        bdist = 300 - math.sqrt(((x - 800)**2) + ((y - 0)**2)) / 2.0
+        rx = (self.width - self.height) / 2.0
+        bx = self.width - rx
+        gx = self.width / 2.0
+        gy = self.height 
+        rdist = 300 - math.sqrt(((x - rx)**2) + ((y - 0)**2)) / 2.0
+        gdist = 300 - math.sqrt(((x - gx)**2) + ((y - gy)**2)) / 2.0
+        bdist = 300 - math.sqrt(((x - bx)**2) + ((y - 0)**2)) / 2.0
         
         self.cursor.scale = max(0.1, cdist / 280)
         self.cursor.rotation = cdist
